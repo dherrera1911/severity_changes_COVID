@@ -1,0 +1,4 @@
+# Ignore big files
+./data/downloaded_datasets/*
+
+

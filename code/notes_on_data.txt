@@ -1,0 +1,71 @@
+- Denmarks second wave seroprevalence estimate is at the very beggining of the wave.
+
+- Data in table 7 of Gornyk et al. seems to have several error
+
+- 2 sources for German deaths, Gornyk et al and a website, are in some disagreement.
+ Data in paper is deaths at "start" of study period? Weird
+
+- Should "Radon K, Saathof E, Pritsch M, Guggenbuhl Noller JM, Kroidl I, Olbrich L,
+et al. Protocol of a population‑based prospective COVID‑19 cohort study
+Munich, Germany (KoCo19). BMC Public Health. 2020;20(1):1036." be the reference
+for 1st wave Munich
+
+- Options munich: Ever positive, or currently positive for prevalence
+
+- Spain: Actual vs total historical positives
+
+- Neuchatel seroprevalence studies: What date to take for outcomes?
+They talk about "seroprevalence by October", but study took 2 months
+long.
+
+- Exclude vaccinated from Neuchatel seroprevalence? Numbers seem
+to change minimally.
+
+- Phase 4 Neuchatel, missing non-vaccinated. Ask from authors?
+
+- Freiburg population in the table of Gornyk et al is different than the
+ population at the citation from the google sheet? Yes, google sheet
+refers to city, paper refers to urban + rural area
+ 
+- Freiburg: Deaths reported in paper much larger than from public database.
+Possible different geographical references? (citi vs state?). 
+
+- Deaths by vaccination status are available for whole Switzerland but
+not at the canton level
+
+- Prevalences obtained from positive tests in Munich wave 1 is different 
+from prevalences reported on Online Table S2. I can't find the reported
+prevalences by age. Maybe I'm lacking test characteristics adjustment?
+
+- From Munich wave 1 study:
+While only a small proportion of the general population in Germany
+live in institutions, official data of the Robert Koch Institute (RKI)
+report that during the study period, 13% of reported SARS-CoV-2 infections
+and 46% of COVID-19-related deaths occurred in institutionalized persons.
+Therefore, we report a range of IFRs depending on the percentage of
+deaths occurring in private households. 
+
+- The majority of inpatients with Covid-19 are admitted as a result of the infection.
+Cited from https://www.england.nhs.uk/statistics/statistical-work-areas/covid-19-hospital-activity/
+
+- England vaccination death data doesn't include late 2020
+
+- We would be unable to provide you with COVID-19 hospitalisations by
+vaccination status in the UK. To fulfil this request would require
+complex data linkage and to use a high level of statistical skill and
+judgement in order to create a bespoke analysis or table. Under the
+Freedom of Information Act 2000, Public Authorities are not obligated
+to create information in order to respond to requests. We therefore
+consider this to be information not held
+https://www.ons.gov.uk/aboutus/transparencyandgovernance/freedomofinformationfoi/covid19hospitalisationsbyvaccinationstatusinengland
+
+- Percentage vaccinated in downloaded dataset for England
+different than Ward et al?
+
+- Check if there is vaccination data for Aachen in paper
+
+- List of vaccination data:
+* 
+
+
+
