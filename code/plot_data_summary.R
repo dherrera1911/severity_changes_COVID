@@ -44,7 +44,7 @@ datesPlot <- ggplot(countriesDates, aes(x=MidPointCases, y=Location, color=Locat
   scale_size_continuous(name="Relative deaths") +
   xlab("Serosurvey median date")
 
-ggsave("../data/figure/seroprevalence_dates.png", datesPlot,
+ggsave("../data/figures/seroprevalence_dates.png", datesPlot,
        width=22, height=12, units="cm")
 
 ### Plot deaths in time for each location

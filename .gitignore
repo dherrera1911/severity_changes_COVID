@@ -1,4 +1,6 @@
 # Ignore big files
 ./data/downloaded_datasets/*
-
+./data/downloaded_datasets/
+./data/analysis_results/*
+./data/figures/*
 
