@@ -46,7 +46,7 @@ model {
   intercept ~ normal(0, 100);
   interceptChange ~ normal(0, 100);
   interceptSigma ~ gamma(4, 4);
-  changeSigma ~ gamma(4, 4);
+  changeSigma ~ gamma(4, 10);
   locationIntercept ~ normal(intercept, interceptSigma);
   locationChange ~ normal(interceptChange, changeSigma);
   prevalence_raw1 ~ beta(seroprev1Shape1, seroprev1Shape2);
