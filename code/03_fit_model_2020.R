@@ -32,7 +32,9 @@ nCores <- 2
 nIter <- 4000
 
 # compile model
-outcome_reg <- rstan::stan_model("./severity_change.stan")
+outcome_reg <- rstan::stan_model("./severity_change.stan",
+                                 model_name="time_change_IFR",
+                                 warn_pedantic=TRUE)
 
 # Load the data
 simData <- read.csv("../data/raw_data/simulated_data.csv",
@@ -61,7 +63,7 @@ initial_values <- function(nChains, paramListName, lowerUni, upperUni,
     #variatedPrev <-  prevalenceVals1*randomVec
     initList[[ch]][["prevalence_raw1"]] <- prevalenceVals1
     prevalenceDiffs <- pmax(prevalenceVals2-prevalenceVals1, 0.05)
-    initList[[ch]][["prevalence_raw2"]] <- prevalenceVals1 + prevalenceDiffs
+    initList[[ch]][["prevalence_diff"]] <- prevalenceDiffs
   }
   return(initList)
 }
@@ -132,19 +134,16 @@ posteriorTraces <- tidybayes::gather_draws(model, ageSlope, intercept,
 write.csv(posteriorTraces, "../data/analysis_results/simulated_data_fit.csv",
           row.names=FALSE)
 
-serologyTrace <- dplyr::mutate(posteriorTraces, .chain=factor(.chain))  %>%
-  dplyr::filter(., !(.variable %in% c("locationIntercept", "locationChange"))) %>%
-  ggplot(., aes(x=.iteration, y=.value, color=.chain)) +
-  geom_line() +
-  facet_wrap(.~.variable, scales="free") +
-  theme_bw()
-
+#serologyTrace <- dplyr::mutate(posteriorTraces, .chain=factor(.chain))  %>%
+#  dplyr::filter(., !(.variable %in% c("locationIntercept", "locationChange"))) %>%
+#  ggplot(., aes(x=.iteration, y=.value, color=.chain)) +
+#  geom_line() +
+#  facet_wrap(.~.variable, scales="free") +
+#  theme_bw()
+#
 #pairsPlot <- pairs(model, pars=c("ageSlope", "intercept", "interceptChange",
 #                                 "interceptSigma", "changeSigma"))
-#png("../data/figures/simulated_data_fit_pairs_plot.png")
-#
-#ggsave("../data/figures/simulated_data_fit_pairs_plot.png", pairsPlot,
-#       units="cm", width=14, height=14)
+##png("../data/figures/simulated_data_fit_pairs_plot.png")
 #
 #pairsPlot <- pairs(model, pars=c("prevalence_diff"))
-#
+
