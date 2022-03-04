@@ -23,7 +23,7 @@ nAges <- length(ageBins)
 
 nLocations <- 12
 
-populations <- round(10^rnorm(nLocations, mean=5, sd=0.6))
+populations <- round(10^rnorm(nLocations, mean=6, sd=0.6))
 
 propInfected1 <- runif(nLocations, 0.05, 0.2) #infected first wave
 propInfectedInter <- runif(nLocations, 0.05, 0.3) #infected in interval
@@ -56,7 +56,9 @@ for (l in c(1:nLocations)) {
   seroprevCI1 <- binomial_confint(rep(seroprevalenceSamples[l], nAges), positives1)
   seroprevL1 <- signif(seroprevCI1$lower*100, digits=3)
   seroprevH1 <- signif(seroprevCI1$upper*100, digits=3)
+
   positives2 <- rbinom(nAges, seroprevalenceSamples[l], propInfected2[l])
+  #positives2 <- rbinom(nAges, seroprevalenceSamples[l], propInfectedInter[l])
   seroprev2 <- signif(positives2/seroprevalenceSamples[l]*100, digits=3)
   seroprevCI2 <- binomial_confint(rep(seroprevalenceSamples[l], nAges), positives2)
   seroprevL2 <- signif(seroprevCI2$lower*100, digits=3)
@@ -72,5 +74,5 @@ for (l in c(1:nLocations)) {
   allDf <- rbind(allDf, locationDf)
 }
   
-write.csv(allDf, file="../data/raw_data/simulated_data.csv", row.names=FALSE)
+write.csv(allDf, file="../data/raw_data/simulated_data_no_subtraction.csv", row.names=FALSE)
 

@@ -1,0 +1,60 @@
+phase_id for later sampling,country,location,type of sample drawn from,midpoint date of initial sampling,midpoint date of later sampling,months between sampling,test name for later sampling,citation id,number of later seropositives among initial seropositives,number of initial seropositives,sensitivity estimate,"relative sensitivity, lower 95% CI",relative sensitivity upper 95% CI,included in sensitivity overtime tabulation,notes
+2,USA,"Davis, Salt Lake, Summit, and Utah counties",representative,5/31/2020,early September 2020,3,Abbott Architect IgG,n-11,36,46,78.3,,,Yes,page 40 (of n-11)
+2,Ireland,National,representative,7/4/2020,*October 2020,3,Abbott Architect IgG,n-137,15,22,68.2,,,Yes,
+2,USA,Wisconsin,representative,--,--,4,Abbott Architect IgG,n-12,12,18,66.7,,,Yes,figure 2
+2,Italy,Trento: 5 municipalities,representative,5/10/2020,--,4,Abbott Architect IgG,n-118,679,1159,58.6,,,Yes,
+3,USA,Wisconsin,representative,--,--,5,Abbott Architect IgG,n-12,4,7,,,,Yes,
+--,--,--,hospitalized + non-hospitalized patients,* March - May 2020,--,5,Abbott Architect IgG,n-133,19,64,29.7,,,Yes,tables 1 and 2
+6,Ireland,National,representative,7/4/2020,*January 2021,6,Abbott Architect IgG,n-137,4,22,18.2,,,Yes,
+4,Spain,National,representative,5/4/2020,11/22/2020,7,Abbott Architect IgG,n-124,643,1530,42.0,,,Yes,table S3
+2,Italy,Vo',representative,5/2/2020,11/28/2020,7,Abbott Architect IgG,n-108,25,72,34.7,,,Yes,figure 3
+2,Italy,Trento: 5 municipalities,representative,5/10/2020,--,4,"Abbott Architect IgG, OR Diasorin Liaison S1/S2 spike IgG ",n-118,1051,1158,90.8,,,Yes,
+2,Austria,Ischgl,representative,4/24/2020,11/17/2020,7,"Abbott Architect IgG, OR Elecsys Anti-SARS-CoV-2 Roche nucleocapsid, OR Euroimmun anti-spike",n-112,399,418,95.5,,,Yes,
+4,Spain,National,representative,5/4/2020,11/22/2020,7,"Beckman ACCESS SARS-CoV-2 anti-RBD, OR Abbott Architect IgG",n-124,868,1530,56.7,,,Yes,
+--,--,--,convenience (general population),*July 2020,*September 2020,2,COVIDAR,n-166,20,20,100.0,,,Yes,
+--,--,--,convenience (general population),*July 2020,*October 2020,3,COVIDAR,n-166,17,20,85.0,,,Yes,
+--,--,--,convenience (general population),*July 2020,*November 2020,4,COVIDAR,n-166,17,20,85.0,,,Yes,
+2,Brazil,Barrio Padre Mugica,representative,6/18/2020,12/11/2020,6,COVIDAR,n-114,161,175,92.0,,,Yes,
+2,Jersey,National,representative,5/5/2020,5/31/2020,1,CTK Biotech Onsite COVID 19 IgG/IgM rapid test kit,n-119,12,17,70.6,,,Yes,
+3,Jersey,National,representative,5/31/2020,6/27/2020,1,CTK Biotech Onsite COVID 19 IgG/IgM rapid test kit,n-19,26,37,70.3,,,Yes,
+--,--,--,hospitalized + non-hospitalized patients,* March - May 2020,--,5,Diasorin Liaison S1/S2 spike IgG ,n-133,86,88,97.7,,,Yes,
+2,Italy,Vo',representative,5/2/2020,11/28/2020,7,Diasorin Liaison S1/S2 spike IgG ,n-108,65,73,89.0,,,Yes,figure 3
+2,Ireland,National,representative,7/4/2020,*October 2020,3,Elecsys Anti-SARS-CoV-2 Roche spike,n-137,22,22,100.0,,,Yes,
+3,Switzerland,Geneva,representative,6/3/2020,12/8/2020,6,Elecsys Anti-SARS-CoV-2 Roche spike,n-136,337,354,95.2,,,Yes,
+3,Ireland,National,representative,7/4/2020,*January 2021,6,Elecsys Anti-SARS-CoV-2 Roche spike,n-137,22,22,100.0,,,Yes,
+2,Ireland,National,representative,7/4/2020,*October 2020,3,Elecsys Anti-SARS-CoV-2 Roche nucleocapsid IgG IgM ,n-137,22,22,100.0,,,Yes,
+-,--,--,convenience (general population),*March - June 2020,*October 2020,6,Elecsys Anti-SARS-CoV-2 Roche nucleocapsid IgG IgM ,n-168,479,484,99.0,,,Yes,
+3,Switzerland,Geneva,representative,6/3/2020,12/8/2020,6,Elecsys Anti-SARS-CoV-2 Roche nucleocapsid IgG IgM ,n-136,330,354,93.2,,,Yes,
+3,Ireland,National,representative,7/4/2020,*January 2021,6,Elecsys Anti-SARS-CoV-2 Roche nucleocapsid IgG IgM ,n-137,22,22,100.0,,,Yes,
+2,Italy,Vo',representative,5/2/2020,11/28/2020,7,Elecsys Anti-SARS-CoV-2 Roche nucleocapsid IgG IgM ,n-108,76,78,97.4,,,Yes,figure 3
+"2,3",Germany,Munich,representative,5/9/2020,12/17/2020,7,Elecsys Anti-SARS-CoV-2 Roche nucleocapsid IgG IgM ,n-28,64,70,91.4,,,Yes,
+5,South Africa,Jouberton and Agincourt,representative + convenience,8/18/2020,4/1/2021,8,Elecsys Anti-SARS-CoV-2 Roche nucleocapsid IgG IgM ,n-197,71,72,98.6,,,Yes,
+2,Austria,Weißenkirchen/Wachau,representative,6/20/2020,10/17/2020,4,Euroimmun anti-spike,n-113,44,47,93.6,,,Yes,
+--,--,--,hospitalized + non-hospitalized patients,* March - May 2020,--,5,Euroimmun anti-spike,n-133,73,90,81.1,,,Yes,
+3,Switzerland,Geneva,representative,6/3/2020,12/8/2020,6,Euroimmun anti-spike,n-136,263,354,74.3,,,Yes,
+4,Germany,Gangelt,representative,4/3/2020,*April 2021,12,Euroimmun anti-spike,n-186,63,90,70.0,,,Yes,
+2,Russia,St. Petersburg,representative,6/11/2020,7/29/2020,2,"Genetico CoronaPass total antibodies test for spike, OR Abbott Architect IgG","n-120 , n-122",58,63,92.1,,,Yes,
+2,Germany,National (Forsa),representative,7/21/2020,11/6/2020,4,"in-house neutralization assay, after Elecsys Anti-SARS-CoV-2 nucleocapsid",n-123,44,45,97.8,,,Yes,
+2,China,Wuhan #2,representative,4/14/2020,6/12/2020,2,"in-house recombinant N protein ELISA, after Elecsys Anti-SARS-CoV-2 nucleocapsid",n-90,354,363,97.5,,,Yes,
+3,China,Wuhan #2,representative,4/14/2020,11/6/2020,7,"in-house recombinant N protein ELISA, after Elecsys Anti-SARS-CoV-2 nucleocapsid",n-90,413,454,91.0,,,Yes,
+2,Europe,Netherlands,representative,--,--,1 - 2,Netherlands in-house anti-spike assay,n-138,202,203,99.5,,,Yes,
+3,Europe,Netherlands,representative,--,--,3 - 4,Netherlands in-house anti-spike assay,n-138,144,147,98.0,,,Yes,
+4,Europe,Netherlands,representative,--,--,≥5,Netherlands in-house anti-spike assay,n-138,236,257,91.8,,,N,
+2,Spain,National,representative,5/4/2020,5/25/2020,1,Orient Gene Biotech COVID-19 IgG/IgM Rapid Test,n-104,2608,2807,92.9,,,Yes,seropositives calculated from seroprevalence and sample size
+3,Spain,National,representative,5/4/2020,6/15/2020,1,Orient Gene Biotech COVID-19 IgG/IgM Rapid Test,n-104,2345,2740,85.6,,,Yes,seropositives calculated from seroprevalence and sample size
+2,Portugal,National (Castro et al.),convenience (general population),9/26/2020,3/9/2021,5,Siemens SARS-CoV-2 Total Advia Centaur,n-156,239,246,97.2,,,Yes,
+2,Canada,"National (Ab-C), unvaccinated population",representative,7/16/2020,--,3,"Sinai Health (Toronto) anti-spike anti-RBD anti-nucleocapsid ELISA, lenient cutoff",n-203,16,17,94.1,,,Yes,
+2,Canada,"National (Ab-C), unvaccinated population",representative,7/16/2020,--,4,"Sinai Health (Toronto) anti-spike anti-RBD anti-nucleocapsid ELISA, lenient cutoff",n-203,15,19,78.9,,,Yes,
+2,Canada,"National (Ab-C), unvaccinated population",representative,7/16/2020,--,5,"Sinai Health (Toronto) anti-spike anti-RBD anti-nucleocapsid ELISA, lenient cutoff",n-203,6,6,100.0,,,Yes,
+2,Canada,"National (Ab-C), unvaccinated population",representative,7/16/2020,--,6,"Sinai Health (Toronto) anti-spike anti-RBD anti-nucleocapsid ELISA, lenient cutoff",n-203,19,26,73.1,,,Yes,
+2,Canada,"National (Ab-C), unvaccinated population",representative,7/16/2020,--,7,"Sinai Health (Toronto) anti-spike anti-RBD anti-nucleocapsid ELISA, lenient cutoff",n-203,35,42,83.3,,,Yes,
+2,Canada,"National (Ab-C), unvaccinated population",representative,7/16/2020,1/30/2021,7,"Sinai Health (Toronto) anti-spike anti-RBD anti-nucleocapsid ELISA, lenient cutoff",n-203,111,134,82.8,,,N (includes the samples above),
+2,Switzerland,Ticino (cantonal office),representative,6/3/2020,8/27/2020,3,"Techno Genetics, Rapid Test SARS-CoV-2 IgM/IgG Gold, anti-nucleocapsid",n-129,59,68,86.8,,,Yes,
+3,Switzerland,Ticino (cantonal office),representative,6/3/2020,11/29/2020,6,"Techno Genetics, Rapid Test SARS-CoV-2 IgM/IgG Gold, anti-nucleocapsid",n-129,51,68,75.0,,,Yes,
+4,Switzerland,Ticino (cantonal office),representative,6/3/2020,5/23/2021,12,"Techno Genetics, Rapid Test SARS-CoV-2 IgM/IgG Gold, anti-nucleocapsid",n-129,42,68,61.8,,,Yes,
+2,Great Britain,Kingdom-wide,representative,6/16/2020,7/26/2020,1,"University of Oxford, IgG for spike",n-116,1147,1211,94.7,,,Yes,see figure 12 on page 15 of n-117
+3,Great Britain,Kingdom-wide,representative,--,--,3,"University of Oxford, IgG for spike",n-117,700,705,99.3,,,Yes,see figure 12 on page 15 of n-117
+3,Great Britain,Kingdom-wide,representative,--,--,6,"University of Oxford, IgG for spike",n-117,619,705,87.8,,,Yes,see figure 12 on page 15 of n-117
+3,Russia,St. Petersburg,representative,6/11/2020,11/8/2020,5,"VectorBest SARS-CoV-2-IgG-ELISA-Best, OR Abbott Architect IgG","n-121 , n-122",92,95,96.8,,,Yes,
+2,Ireland,National,representative,7/4/2020,*October 2020,3,"Wantai SARS-CoV-2 Total Antibody, IgG IgM anti-RBD",n-137,22,22,100.0,,,Yes,
+3,Ireland,National,representative,7/4/2020,*January 2021,6,"Wantai SARS-CoV-2 Total Antibody, IgG IgM anti-RBD",n-137,22,22,100.0,,,Yes,

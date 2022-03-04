@@ -30,17 +30,14 @@ parameters {
   vector[K] locationChange;        // intercept change of each location 
   vector<lower=0, upper=1>[N] prevalence_raw1; 
   vector<lower=0, upper=1>[N] prevalence_diff; 
-  //vector<lower=0, upper=1>[N] prevalence_raw2; 
 }
 
 transformed parameters{
   vector<lower=0, upper=1>[N] outcomeRate1;  // variable to contain % outcome
   vector<lower=0, upper=1>[N] outcomeRate2;  // variable to contain % outcome
-  //vector<lower=0, upper=1>[N] prevalence_diff;
   vector<lower=0, upper=1>[N] prevalence_raw2;
   outcomeRate1 = inv_logit(locationIntercept[location] + ageSlope * ageVec);  // logistic regression model 
   outcomeRate2 = inv_logit(locationIntercept[location] + locationChange[location] + ageSlope * ageVec);  // logistic regression model 
-  //prevalence_diff = prevalence_raw2 - prevalence_raw1;
   prevalence_raw2 = prevalence_diff + prevalence_raw1;
 }
 
