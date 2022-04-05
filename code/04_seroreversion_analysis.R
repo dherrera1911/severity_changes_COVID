@@ -1,6 +1,9 @@
 library(dplyr)
 library(tidyr)
 library(lubridate)
+library(rstan)
+library(bayesplot)
+library(tidybayes)
 
 source("./functions_auxiliary.R")
 
@@ -9,7 +12,9 @@ ifrSeroassays <- read.csv("../data/raw_data/location_seroassays.csv",
                           stringsAsFactors=FALSE)
 
 ############
+############
 # Data of known time between diagnosis and serosurvey
+############
 ############
 seroKnown <- read.csv("../data/raw_data/seroreversion_prior_positives_known_retest.csv",
                      stringsAsFactors=FALSE) %>%
@@ -28,17 +33,6 @@ newVarNames <- c("phase_id", "country", "location", "sampleType", "startDate",
                  "includedTable", "notes", "usedIFR")
 names(seroKnown) <- newVarNames
 
-# Give confidence intervals to datapoints lacking them (only N samples and N positive)
-for (r in c(1:nrow(seroKnown))) {
-  if (is.na(seroKnown[[r,"sensitivityL"]])) {
-    seroprevConfint <- binomial_confint(seroKnown[[r,"nSamples"]],
-                                        seroKnown[[r, "nSeropositives"]])
-    seroKnown[[r,"sensitivityL"]] <- signif(seroprevConfint$lower*100, digits=4)
-    seroKnown[[r,"sensitivityH"]] <- signif(seroprevConfint$upper*100, digits=4)
-    seroKnown[[r,"sensitivityMean"]] <- signif(seroKnown[[r,"nSeropositives"]]/
-                                              seroKnown[[r,"nSamples"]]*100, digits=4)
-  }
-}
 
 # Relabel test times that give intervals into single times
 seroKnown$testTime[seroKnown$testTime=="0.5 - 2"] <- "1"
@@ -51,137 +45,139 @@ seroKnown$testTime[seroKnown$testTime==">6"] <- "7"
 # Convert test times to integer
 seroKnown$testTime <- as.numeric(seroKnown$testTime)
 
-# Make the plots
-seroprevKnownPlot_IFR <- dplyr::filter(seroKnown, usedIFR==1) %>%
-  ggplot(aes(x=testTime, y=sensitivityMean, color=citationID, shape=sampleType)) +
-  geom_pointrange(aes(ymin=sensitivityL, ymax=sensitivityH),
-                  position=position_jitter(width=0.15, height=0)) +
-  facet_wrap(.~testName) +
-  theme_bw() +
-  theme(legend.position="top",
-        ) +
-  guides(color=FALSE, shape=guide_legend("Sample type")) +
-  xlim(0, 10) +
-  xlab("Diagnosis to test (months)") +
-  ylab("Sensitivity (%)")
-
-seroprevKnownPlot_noIFR <- dplyr::filter(seroKnown, usedIFR==0) %>%
-  ggplot(aes(x=testTime, y=sensitivityMean, color=citationID,
-             shape=sampleType)) +
-  geom_pointrange(aes(ymin=sensitivityL, ymax=sensitivityH),
-                  position=position_jitter(width=0.15, height=0)) +
-  facet_wrap(.~testName, ncol=4) +
-  theme_bw() +
-  theme(legend.position="top") +
-  guides(color=FALSE, shape=guide_legend("Sample type")) +
-  xlim(0, 12) +
-  xlab("Diagnosis to test (months)") +
-  ylab("Sensitivity (%)")
-
-seroprevKnownPlot <- dplyr::filter(seroKnown) %>%
-  ggplot(aes(x=testTime, y=sensitivityMean, color=testName)) +
-  geom_pointrange(aes(ymin=sensitivityL, ymax=sensitivityH),
-                  position=position_jitter(width=0.15, height=0)) +
-  facet_wrap(.~sampleType) +
-  theme_bw() +
-  theme(legend.position="none") +
-  xlim(0, 12) +
-  xlab("Diagnosis to test (months)") +
-  ylab("Sensitivity (%)")
-
-ggsave("../data/figures/seroreversion_inIFR_with_diagnosis.png",
-       seroprevKnownPlot_IFR, units="cm", width=25, height=16)
-ggsave("../data/figures/seroreversion_notIFR_with_diagnosis.png",
-       seroprevKnownPlot_noIFR, units="cm", width=32, height=38)
-ggsave("../data/figures/seroreversion_all_with_diagnosis.png",
-       seroprevKnownPlot, units="cm", width=30, height=18)
-
-
-############
-# Data of unknown time between diagnosis and serosurvey
-############
-seroUnknown <- read.csv("../data/raw_data/seroreversion_prior_positives_unknown_retest.csv",
-                     stringsAsFactors=FALSE) %>%
-  dplyr::mutate(., test.name.for.later.sampling=
-                str_replace(test.name.for.later.sampling, " $", ""),
-                number.of.later.seropositives.among.initial.seropositives=
-                  as.integer(number.of.later.seropositives.among.initial.seropositives),
-                number.of.initial.seropositives=as.integer(number.of.initial.seropositives),
-                usedIFR=test.name.for.later.sampling %in% ifrSeroassays$Assay) %>%
-  as_tibble(.)
-
-# Change variable names to be more friendly
-newVarNames <- c("phase_id", "country", "location", "sampleType",
-                 "midpointInitial", "midpointFollowup", "testTime",
-                 "testName", "citationID", "nSeropositives", "nSamples",
-                 "sensitivityMean", "sensitivityL", "sensitivityH",
-                 "includedTable", "notes", "usedIFR")
-names(seroUnknown) <- newVarNames
+# Remove mixed assays
+seroKnown <- dplyr::filter(seroKnown, !stringr::str_detect(testName, "OR"))
 
 # Give confidence intervals to datapoints lacking them (only N samples and N positive)
-seroUnknown$sensitivityL <- as.numeric(seroUnknown$sensitivityL)
-seroUnknown$sensitivityH <- as.numeric(seroUnknown$sensitivityH)
-for (r in c(1:nrow(seroUnknown))) {
-  if (is.na(seroUnknown[[r,"sensitivityL"]])) {
-    seroprevConfint <- binomial_confint(seroUnknown[[r,"nSamples"]],
-                                        seroUnknown[[r, "nSeropositives"]])
-    seroUnknown[[r,"sensitivityL"]] <- signif(seroprevConfint$lower*100, digits=4)
-    seroUnknown[[r,"sensitivityH"]] <- signif(seroprevConfint$upper*100, digits=4)
-    seroUnknown[[r,"sensitivityMean"]] <- signif(seroUnknown[[r,"nSeropositives"]]/
-                                              seroUnknown[[r,"nSamples"]]*100, digits=4)
+for (r in c(1:nrow(seroKnown))) {
+  if (is.na(seroKnown[[r,"sensitivityL"]])) {
+    seroprevConfint <- binomial_confint(seroKnown[[r,"nSamples"]],
+                                        seroKnown[[r, "nSeropositives"]])
+    seroKnown[[r,"sensitivityL"]] <- signif(seroprevConfint$lower*100, digits=4)
+    seroKnown[[r,"sensitivityH"]] <- signif(seroprevConfint$upper*100, digits=4)
+    seroKnown[[r,"sensitivityMean"]] <- signif(seroKnown[[r,"nSeropositives"]]/
+                                              seroKnown[[r,"nSamples"]]*100, digits=4)
   }
 }
 
-# Relabel test times that give intervals into single times
-seroUnknown$testTime[seroUnknown$testTime=="1 - 2"] <- "1.5"
-seroUnknown$testTime[seroUnknown$testTime=="3 - 4"] <- "3.5"
-seroUnknown$testTime[seroUnknown$testTime=="≥5"] <- "6"
-# Convert test times to integer
-seroUnknown$testTime <- as.numeric(seroUnknown$testTime)
+# Fit beta distribution to studies without raw data, to estimate raw data
+nonRaw <- is.na(seroKnown$nSamples)
+fittedBetas <- fit_beta_ci(meanEstimate=seroKnown$sensitivityMean[nonRaw]/100,
+                            lower=seroKnown$sensitivityL[nonRaw]/100,
+                            upper=seroKnown$sensitivityH[nonRaw]/100)
 
-# Make the plots
-seroprevUnknownPlot_IFR <- dplyr::filter(seroUnknown, usedIFR==1) %>%
-  ggplot(aes(x=testTime, y=sensitivityMean, color=citationID, shape=sampleType)) +
-  geom_pointrange(aes(ymin=sensitivityL, ymax=sensitivityH),
-                  position=position_jitter(width=0.15, height=0)) +
-  facet_wrap(.~testName) +
-  theme_bw() +
-  theme(legend.position="top",
-        ) +
-  guides(color=FALSE, shape=guide_legend("Sample type")) +
-  xlim(0, 12) +
-  xlab("Test to retest (months)") +
-  ylab("Relative sensitivity (%)")
+totalCount <- with(fittedBetas, shape1+shape2)
+meanSensitivity <- with(fittedBetas, shape1/(shape1+shape2)*100)
+confintSensitivity <- binomial_confint(round(totalCount), round(fittedBetas$shape1))
 
-seroprevUnknownPlot_noIFR <- dplyr::filter(seroUnknown, usedIFR==0) %>%
-  ggplot(aes(x=testTime, y=sensitivityMean, color=citationID,
-             shape=sampleType)) +
-  geom_pointrange(aes(ymin=sensitivityL, ymax=sensitivityH),
-                  position=position_jitter(width=0.15, height=0)) +
-  facet_wrap(.~testName, ncol=3) +
-  theme_bw() +
-  theme(legend.position="top") +
-  guides(color=FALSE, shape=guide_legend("Sample type")) +
-  xlim(0, 12) +
-  xlab("Test to retest (months)") +
-  ylab("Relative sensitivity (%)")
+#plot(meanSensitivity, seroKnown$sensitivityMean[nonRaw])
+#abline(0,1)
+#plot(confintSensitivity$lower*100, seroKnown$sensitivityL[nonRaw])
+#abline(0,1)
+#plot(confintSensitivity$upper*100, seroKnown$sensitivityH[nonRaw])
+#abline(0,1)
 
-seroprevUnknownPlot <- dplyr::filter(seroUnknown) %>%
-  ggplot(aes(x=testTime, y=sensitivityMean, color=testName)) +
-  geom_pointrange(aes(ymin=sensitivityL, ymax=sensitivityH),
-                  position=position_jitter(width=0.15, height=0)) +
-  facet_wrap(.~sampleType) +
-  theme_bw() +
-  theme(legend.position="none") +
-  xlim(0, 12) +
-  xlab("Test to retest (months)") +
-  ylab("Relative sensitivity (%)")
+# Add estimated raw data to the dataframe
+seroKnown$nSamples[nonRaw] <- with(fittedBetas, round(shape1+shape2))
+seroKnown$nSeropositives[nonRaw] <- round(fittedBetas$shape1)
 
-ggsave("../data/figures/seroreversion_inIFR_without_diagnosis.png",
-       seroprevUnknownPlot_IFR, units="cm", width=25, height=16)
-ggsave("../data/figures/seroreversion_notIFR_without_diagnosis.png",
-       seroprevUnknownPlot_noIFR, units="cm", width=32, height=38)
-ggsave("../data/figures/seroreversion_all_without_diagnosis.png",
-       seroprevUnknownPlot, units="cm", width=30, height=18)
+# filter out increasing sensitivity test
+seroKnown <- dplyr::filter(seroKnown, !(testName=="Vitros Ortho total Ig anti-spike"
+                                        & citationID=="n-132"))
 
+###################
+###################
+# Fit model
+###################
+###################
+
+# compile model
+outcome_reg <- rstan::stan_model("./sensitivity_change.stan",
+                                 model_name="time_change_sensitivity",
+                                 warn_pedantic=TRUE)
+
+# Fitting parameters
+nChains <- 4
+nCores <- 2
+nIter <- 4000
+
+### Estimate some initial values for the fit
+# compute all logits
+logitVals <- with(seroKnown, log((sensitivityMean/100)/(1-sensitivityMean/100)))
+# mean logits at time 1
+meanIntercept <- mean(logitVals[seroKnown$testTime<=1])
+sdIntercept <- sd(logitVals[seroKnown$testTime<=1])
+# slopes
+seroKnown$normalizedTime <- with(seroKnown, testTime/mean(testTime))
+
+logReg <- glm(cbind(nSeropositives, nSamples-nSeropositives) ~ normalizedTime,
+    data=seroKnown, family="binomial")
+meanSlope <- logReg$coefficients[2]
+
+####################
+# define function to make list of initial values, for STAN
+####################
+initial_values <- function(nChains, paramListName, lowerUni, upperUni, paramSize) {
+  initList <- list()
+  for (ch in c(1:nChains)) {
+    initList[[ch]] <- list()
+    for (p in c(1:length(paramListName))) {
+      initList[[ch]][[paramListName[p]]] <- runif(paramSize[p], min=lowerUni[p],
+                                                  max=upperUni[p])
+    }
+  }
+  return(initList)
+}
+
+# Set the ranges for the initial values of the parameters
+paramListName <- c("timeSlope", "intercept", "slopeSigma", "interceptSigma",
+  "assaySlope", "assayIntercept")
+lowerUni <- c(-1, meanIntercept*0.9, 0.2, sdIntercept*0.9,
+              -0.6, meanIntercept*0.9)
+upperUni <- c(0, meanIntercept*1, 0.25, sdIntercept*1.1,
+              -0.5, meanIntercept*1)
+nTests <- length(unique(seroKnown$testName))
+paramSize <- c(1, 1, 1, 1, nTests, nTests)
+
+# Sample the initial values to use
+initList <- initial_values(nChains=nChains, paramListName=paramListName,
+                           lowerUni=lowerUni, upperUni=upperUni,
+                           paramSize=paramSize)
+
+# Make a list with the input we pass to STAN
+assayDataList <- list(N=nrow(seroKnown),
+                  K=length(unique(seroKnown$testName)),
+                  assay=as.integer(as.factor(seroKnown$testName)),
+                  timeVec=seroKnown$testTime/4,
+                  nPositive=seroKnown$nSeropositives,
+                  nNegative=seroKnown$nSamples-seroKnown$nSeropositives)
+
+# Fit model
+model <- rstan::sampling(outcome_reg, data=assayDataList,
+                           chains=nChains, iter=nIter, refresh=0,
+                           verbose=TRUE, cores=nCores, init=initList)
+
+######
+# Extract model data, and check diagnostics
+######
+posteriorTraces <- tidybayes::gather_draws(model, timeSlope,
+                                           intercept, slopeSigma,
+                                           interceptSigma,
+                                           assayIntercept[loc],
+                                           assaySlope[loc])
+posteriorTraces$assay <- unique(seroKnown$testName)[posteriorTraces$loc]
+
+write.csv(posteriorTraces, "../data/analysis_results/sensitivity_decay.csv",
+          row.names=FALSE)
+
+
+sensitivityTrace <- dplyr::mutate(posteriorTraces, .chain=factor(.chain))  %>%
+  ggplot(., aes(x=.iteration, y=.value, color=.chain)) +
+  geom_line() +
+  facet_wrap(.~.variable, scales="free") +
+  theme_bw()
+
+pairsPlot <- pairs(model, pars=c("timeSlope", "intercept", "slopeSigma",
+                                 "interceptSigma"))
+#png("../data/figures/simulated_data_fit_pairs_plot.png")
 

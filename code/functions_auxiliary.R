@@ -154,6 +154,36 @@ proportion_samples <- function(model, ageVec,
   
 
 
+# Get posterior samples of bayesian fit to seroreversion
+seroreversion_samples <- function(posteriorDf, timeVec,
+                               slopeName="timeSlope",
+                               interceptName="intercept",
+                               timeNormalization=4) {
+  stdTimeVec <- timeVec/timeNormalization
+  fitSampleMat <- matrix(nrow=length(timeVec), ncol=0)
+  slopeDf <- dplyr::filter(posteriorDf, .variable==slopeName)
+  interceptDf <- dplyr::filter(posteriorDf, .variable==interceptName)
+  for (n in c(1:nrow(slopeDf))) {
+    intSample <- interceptDf$.value[n]
+    slopeSample <- slopeDf$.value[n]
+    lin <- intSample + slopeSample * stdTimeVec
+    fitProp <- exp(lin)/(1+exp(lin))
+    fitSampleMat <- cbind(fitSampleMat, as.matrix(fitProp))
+  }
+  meanProp <- rowMeans(fitSampleMat) 
+  ciProp <- matrixStats::rowQuantiles(fitSampleMat, probs=c(0.025, 0.975))
+  sampleVec <- sort(rep(c(1:ncol(fitSampleMat)), nrow(fitSampleMat)))
+  timeVecLong <- rep(timeVec, ncol(fitSampleMat))
+  timeIndVec <- rep(c(1:length(timeVec)), ncol(fitSampleMat))
+  samplesDf <- data.frame(sample=sampleVec,
+                          proportion=as.vector(fitSampleMat),
+                          time=timeVecLong, timeInd=timeIndVec)
+  sampleList <- list(samples=samplesDf, prop_mean=meanProp,
+                     prop_L=ciProp[,1], prop_H=ciProp[,2])
+  return(sampleList)
+}
+  
+
 ## Get posterior samples of bayesian fit and put into matrix
 #proportion_samples <- function(model, ageVec,
 #                               slopeName="ageSlope",
