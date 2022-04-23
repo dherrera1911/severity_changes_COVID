@@ -17,7 +17,7 @@ ifrTable <- read.csv("../data/raw_data/collected_data.csv",
 locNames1 <- unique(ifrTable$Location)
 
 # Data of seroanalysis test and seroanalysis retest
-seroUnknown <- read.csv("../data/raw_data/seroreversion_prior_positives_unknown_retest.csv",
+seroUnknown <- read.csv("../data/raw_data/serotest_to_serotest.csv",
                      stringsAsFactors=FALSE) %>%
   as_tibble(.)
 # Change variable names to be more friendly
@@ -30,7 +30,7 @@ names(seroUnknown) <- newVarNames
 locNames2 <- sort(unique(paste(seroUnknown$country, seroUnknown$location)))
 
 # Data of PCR test, seroanalysis retest, with unknown dates
-seroUnknown2 <- read.csv("../data/raw_data/seroreversion_prior_PCRpositives_unknown_retest.csv",
+seroUnknown2 <- read.csv("../data/raw_data/PCR_to_serotest_unknown_times.csv",
                      stringsAsFactors=FALSE) %>%
   as_tibble(.)
 # Change variable names to be more friendly
@@ -43,7 +43,7 @@ names(seroUnknown2) <- newVarNames
 locNames3 <- sort(unique(paste(seroUnknown2$country, seroUnknown2$location)))
 
 # Data of PCR test, seroanalysis retest, with known dates
-seroKnown <- read.csv("../data/raw_data/seroreversion_prior_positives_known_retest.csv",
+seroKnown <- read.csv("../data/raw_data/PCR_to_serotest_known_times.csv",
                      stringsAsFactors=FALSE) %>%
   as_tibble(.)
 # Change variable names to be more friendly
@@ -84,10 +84,10 @@ franceDeaths <- read.csv("../data/downloaded_datasets/france/owid-covid-data.csv
   dplyr::mutate(., deaths=total_deaths, cases=total_cases, Location="France") %>%
   dplyr::select(., date, cases, deaths, Location) 
 
-jersey <- covid19(country="Jersey") %>%
-  dplyr::mutate(., Location=country) %>%
-  ungroup(.) %>%
-  dplyr::select(., date, deaths, Location)
+#jersey <- covid19(country="Jersey") %>%
+#  dplyr::mutate(., Location=country) %>%
+#  ungroup(.) %>%
+#  dplyr::select(., date, deaths, Location)
 
 ### United States locations
 usaDeaths <- read.csv("../data/downloaded_datasets/death_dynamics_covid19_datahub/USA.csv",
@@ -109,27 +109,28 @@ usaCountyDeaths <- dplyr::filter(usaDeaths, (administrative_area_level_3 %in%
   !(administrative_area_level_2=="Georgia" & administrative_area_level_3=="Houston")) %>%
   dplyr::mutate(., Location=administrative_area_level_3) %>%
   covid19_tidying(.)
+usaCountyDeaths$Location[usaCountyDeaths$Location=="Hampden"] <- "Holyoke"
 
 
 ### United Kingdom locations
-ukDeaths <- covid19(country=c("United Kingdom"), level=2)
 # Nations
-englandDeaths <- ukDeaths %>%
-  dplyr::filter(., administrative_area_level_2=="England") %>%
+englandDeaths <- read.csv("../data/downloaded_datasets/death_dynamics_covid19_datahub/England.csv",
+                          stringsAsFactors=FALSE) %>%
   dplyr::mutate(., Location=administrative_area_level_2) %>%
   covid19_tidying(.)
 
-scotlandDeaths <- ukDeaths %>%
-  dplyr::filter(., administrative_area_level_2=="Scotland") %>%
+scotlandDeaths <- read.csv("../data/downloaded_datasets/death_dynamics_covid19_datahub/Scotland.csv",
+                          stringsAsFactors=FALSE) %>%
   dplyr::mutate(., Location=administrative_area_level_2) %>%
   covid19_tidying(.)
 
-walesDeaths <- ukDeaths %>%
-  dplyr::filter(., administrative_area_level_2=="Wales") %>%
+walesDeaths <- read.csv("../data/downloaded_datasets/death_dynamics_covid19_datahub/Wales.csv",
+                          stringsAsFactors=FALSE) %>%
   dplyr::mutate(., Location=administrative_area_level_2) %>%
   covid19_tidying(.)
 
-northernIrelandDeaths <- ukDeaths %>%
+northernIrelandDeaths <- read.csv("../data/downloaded_datasets/death_dynamics_covid19_datahub/Northern_Ireland.csv",
+                          stringsAsFactors=FALSE) %>%
   dplyr::filter(., administrative_area_level_2=="Northern Ireland") %>%
   dplyr::mutate(., Location=administrative_area_level_2) %>%
   covid19_tidying(.)
@@ -229,6 +230,21 @@ kupferzellDeaths <- dataGer %>%
 tirschenreuthDeaths <- dataGer %>%
   dplyr::filter(., Landkreis=="LK Tirschenreuth") %>%
   germanCovid_tidy(., "Tirschenreuth")
+
+straubingDeaths <- dataGer %>%
+  dplyr::filter(., Landkreis=="SK Straubing") %>%
+  germanCovid_tidy(., "Straubing")
+
+chemnitzDeaths <- dataGer %>%
+  dplyr::filter(., Landkreis=="SK Chemnitz") %>%
+  germanCovid_tidy(., "Chemnitz")
+
+vorpommernDeaths <- dataGer %>%
+  dplyr::filter(., Landkreis=="LK Vorpommern-Greifswald") %>%
+  germanCovid_tidy(., "Vorpommern")
+
+
+
 
 
 ### Austria
@@ -389,8 +405,9 @@ allDeaths <- rbind(countriesDeaths, franceDeaths, usaStatesDeaths,
   northernIrelandDeaths, genevaDeaths, neuchatelDeaths, fribourgDeaths,
   ticinoDeaths, freiburgDeaths, reutlingenDeaths, osnabruckDeaths,
   aachenDeaths, magdeburgDeaths, munichDeaths, gangeltDeaths,
-  mitteDeaths, kupferzellDeaths, tirschenreuthDeaths, ischglDeaths,
-  wachauDeaths, trentoDeaths, voDeaths, addaDeaths, caldariDeaths,
+  mitteDeaths, kupferzellDeaths, tirschenreuthDeaths, straubingDeaths,
+  chemnitzDeaths, vorpommernDeaths,
+  ischglDeaths, wachauDeaths, trentoDeaths, voDeaths, addaDeaths, caldariDeaths,
   wuhanDeaths, petersburgDeaths, joubertonDeaths, gautengDeaths,
   mugicaDeaths, madrynDeaths, chileDeaths, delhiDeaths,
   hyderabadDeaths, kashmirDeaths, odishaDeaths,

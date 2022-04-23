@@ -16,13 +16,12 @@ ifrSeroassays <- read.csv("../data/raw_data/location_seroassays.csv",
 # Data of known time between diagnosis and serosurvey
 ############
 ############
-seroKnown <- read.csv("../data/raw_data/seroreversion_prior_positives_known_retest.csv",
+seroKnown <- read.csv("../data/raw_data/PCR_to_serotest_known_times.csv",
                      stringsAsFactors=FALSE) %>%
   dplyr::mutate(., test.name=str_replace(test.name, " $", ""),
                 number.of.seropositives.among.prior.positives=
                   as.integer(number.of.seropositives.among.prior.positives),
-                number.of.prior.positives=as.integer(number.of.prior.positives),
-                usedIFR=test.name %in% ifrSeroassays$Assay) %>%
+                number.of.prior.positives=as.integer(number.of.prior.positives)) %>%
   as_tibble(.)
 
 # Change variable names to be more friendly
@@ -33,57 +32,70 @@ newVarNames <- c("phase_id", "country", "location", "sampleType", "startDate",
                  "includedTable", "notes", "usedIFR")
 names(seroKnown) <- newVarNames
 
-
 # Relabel test times that give intervals into single times
 seroKnown$testTime[seroKnown$testTime=="0.5 - 2"] <- "1"
 seroKnown$testTime[seroKnown$testTime=="1 - 3"] <- "2"
-seroKnown$testTime[seroKnown$testTime=="2 - 4"] <- "3"
 seroKnown$testTime[seroKnown$testTime=="2 - 3"] <- "2.5"
+seroKnown$testTime[seroKnown$testTime=="2 - 4"] <- "3"
+seroKnown$testTime[seroKnown$testTime=="4 - 5"] <- "4.5"
 seroKnown$testTime[seroKnown$testTime=="4 - 6"] <- "5"
-seroKnown$testTime[seroKnown$testTime=="4 - 6"] <- "5"
+seroKnown$testTime[seroKnown$testTime=="5 - 7"] <- "6"
 seroKnown$testTime[seroKnown$testTime==">6"] <- "7"
 # Convert test times to integer
 seroKnown$testTime <- as.numeric(seroKnown$testTime)
 
+############
+############
+# Data of unknown time between diagnosis and serosurvey
+############
+############
+seroEstimated <- read.csv("../data/analysis_results/PCR_to_serotest_estimated_times.csv",
+                          stringsAsFactors=FALSE)
+seroEstimated$includedTable <- NA
+seroEstimated <- dplyr::filter(seroEstimated, !(is.na(nSamples) & is.na(sensitivityL)))
+
+
+### Put together known and unknown serotests
+seroAll <- rbind(seroKnown, seroEstimated)
+
+##### Select which dataset to fit
+seroFitted <- seroAll
+
 # Remove mixed assays
-seroKnown <- dplyr::filter(seroKnown, !stringr::str_detect(testName, "OR"))
+seroFitted <- dplyr::filter(seroFitted, !stringr::str_detect(testName, "OR"))
 
 # Give confidence intervals to datapoints lacking them (only N samples and N positive)
-for (r in c(1:nrow(seroKnown))) {
-  if (is.na(seroKnown[[r,"sensitivityL"]])) {
-    seroprevConfint <- binomial_confint(seroKnown[[r,"nSamples"]],
-                                        seroKnown[[r, "nSeropositives"]])
-    seroKnown[[r,"sensitivityL"]] <- signif(seroprevConfint$lower*100, digits=4)
-    seroKnown[[r,"sensitivityH"]] <- signif(seroprevConfint$upper*100, digits=4)
-    seroKnown[[r,"sensitivityMean"]] <- signif(seroKnown[[r,"nSeropositives"]]/
-                                              seroKnown[[r,"nSamples"]]*100, digits=4)
+for (r in c(1:nrow(seroFitted))) {
+  if (is.na(seroFitted[[r,"sensitivityL"]])) {
+    seroprevConfint <- binomial_confint(seroFitted[[r,"nSamples"]],
+                                        seroFitted[[r, "nSeropositives"]])
+    seroFitted[[r,"sensitivityL"]] <- signif(seroprevConfint$lower*100, digits=4)
+    seroFitted[[r,"sensitivityH"]] <- signif(seroprevConfint$upper*100, digits=4)
+    seroFitted[[r,"sensitivityMean"]] <- signif(seroFitted[[r,"nSeropositives"]]/
+                                              seroFitted[[r,"nSamples"]]*100, digits=4)
   }
 }
 
 # Fit beta distribution to studies without raw data, to estimate raw data
-nonRaw <- is.na(seroKnown$nSamples)
-fittedBetas <- fit_beta_ci(meanEstimate=seroKnown$sensitivityMean[nonRaw]/100,
-                            lower=seroKnown$sensitivityL[nonRaw]/100,
-                            upper=seroKnown$sensitivityH[nonRaw]/100)
+nonRaw <- is.na(seroFitted$nSamples)
+fittedBetas <- fit_beta_ci(meanEstimate=seroFitted$sensitivityMean[nonRaw]/100,
+                            lower=seroFitted$sensitivityL[nonRaw]/100,
+                            upper=seroFitted$sensitivityH[nonRaw]/100)
 
 totalCount <- with(fittedBetas, shape1+shape2)
 meanSensitivity <- with(fittedBetas, shape1/(shape1+shape2)*100)
 confintSensitivity <- binomial_confint(round(totalCount), round(fittedBetas$shape1))
 
-#plot(meanSensitivity, seroKnown$sensitivityMean[nonRaw])
-#abline(0,1)
-#plot(confintSensitivity$lower*100, seroKnown$sensitivityL[nonRaw])
-#abline(0,1)
-#plot(confintSensitivity$upper*100, seroKnown$sensitivityH[nonRaw])
-#abline(0,1)
-
 # Add estimated raw data to the dataframe
-seroKnown$nSamples[nonRaw] <- with(fittedBetas, round(shape1+shape2))
-seroKnown$nSeropositives[nonRaw] <- round(fittedBetas$shape1)
+seroFitted$nSamples[nonRaw] <- with(fittedBetas, round(shape1+shape2))
+seroFitted$nSeropositives[nonRaw] <- round(fittedBetas$shape1)
 
 # filter out increasing sensitivity test
-seroKnown <- dplyr::filter(seroKnown, !(testName=="Vitros Ortho total Ig anti-spike"
+seroFitted <- dplyr::filter(seroFitted, !(testName=="Vitros Ortho total Ig anti-spike"
                                         & citationID=="n-132"))
+
+write.csv(seroFitted, "../data/analysis_results/PCR_to_serotest_estimated_times.csv",
+          row.names=FALSE)
 
 ###################
 ###################
@@ -103,15 +115,15 @@ nIter <- 4000
 
 ### Estimate some initial values for the fit
 # compute all logits
-logitVals <- with(seroKnown, log((sensitivityMean/100)/(1-sensitivityMean/100)))
+logitVals <- with(seroFitted, log((sensitivityMean/100)/(1-sensitivityMean/100)))
 # mean logits at time 1
-meanIntercept <- mean(logitVals[seroKnown$testTime<=1])
-sdIntercept <- sd(logitVals[seroKnown$testTime<=1])
+meanIntercept <- mean(logitVals[seroFitted$testTime<=1 & logitVals!=Inf])
+sdIntercept <- sd(logitVals[seroFitted$testTime<=1] & logitVals!=Inf)
 # slopes
-seroKnown$normalizedTime <- with(seroKnown, testTime/mean(testTime))
+seroFitted$normalizedTime <- with(seroFitted, testTime/mean(testTime))
 
 logReg <- glm(cbind(nSeropositives, nSamples-nSeropositives) ~ normalizedTime,
-    data=seroKnown, family="binomial")
+    data=seroFitted, family="binomial")
 meanSlope <- logReg$coefficients[2]
 
 ####################
@@ -131,26 +143,32 @@ initial_values <- function(nChains, paramListName, lowerUni, upperUni, paramSize
 
 # Set the ranges for the initial values of the parameters
 paramListName <- c("timeSlope", "intercept", "slopeSigma", "interceptSigma",
-  "assaySlope", "assayIntercept")
+  "assaySlope", "assayIntercept", "studyIntercept")
 lowerUni <- c(-1, meanIntercept*0.9, 0.2, sdIntercept*0.9,
-              -0.6, meanIntercept*0.9)
+              -0.6, meanIntercept*0.9, -0.1)
 upperUni <- c(0, meanIntercept*1, 0.25, sdIntercept*1.1,
-              -0.5, meanIntercept*1)
-nTests <- length(unique(seroKnown$testName))
-paramSize <- c(1, 1, 1, 1, nTests, nTests)
+              -0.5, meanIntercept*1, 0.1)
+nTests <- length(unique(seroFitted$testName))
+nStudies <- length(unique(paste(seroFitted$testName, seroFitted$citationID)))
+paramSize <- c(1, 1, 1, 1, nTests, nTests, nStudies)
 
 # Sample the initial values to use
 initList <- initial_values(nChains=nChains, paramListName=paramListName,
                            lowerUni=lowerUni, upperUni=upperUni,
                            paramSize=paramSize)
 
+
 # Make a list with the input we pass to STAN
-assayDataList <- list(N=nrow(seroKnown),
-                  K=length(unique(seroKnown$testName)),
-                  assay=as.integer(as.factor(seroKnown$testName)),
-                  timeVec=seroKnown$testTime/4,
-                  nPositive=seroKnown$nSeropositives,
-                  nNegative=seroKnown$nSamples-seroKnown$nSeropositives)
+assayVec <- as.factor(seroFitted$testName)
+studies <- as.factor(paste(seroFitted$testName, seroFitted$citationID))
+assayDataList <- list(N=nrow(seroFitted),
+                  K=length(unique(seroFitted$testName)),
+                  M=length(unique(studies)),
+                  assay=as.integer(assayVec),
+                  study=as.integer(studies),
+                  timeVec=seroFitted$testTime/4,
+                  nPositive=seroFitted$nSeropositives,
+                  nTested=seroFitted$nSamples)
 
 # Fit model
 model <- rstan::sampling(outcome_reg, data=assayDataList,
@@ -163,13 +181,25 @@ model <- rstan::sampling(outcome_reg, data=assayDataList,
 posteriorTraces <- tidybayes::gather_draws(model, timeSlope,
                                            intercept, slopeSigma,
                                            interceptSigma,
+                                           studySigma,
                                            assayIntercept[loc],
-                                           assaySlope[loc])
-posteriorTraces$assay <- unique(seroKnown$testName)[posteriorTraces$loc]
+                                           assaySlope[loc],
+                                           studyIntercept[stu])
 
-write.csv(posteriorTraces, "../data/analysis_results/sensitivity_decay.csv",
+posteriorTraces$assay <- levels(assayVec)[posteriorTraces$loc]
+studyList <- strsplit(as.character(levels(studies)), " n-")
+assayVec <- NULL
+studyVec <- NULL
+for (i in c(1:length(studyList))) {
+  assayVec <- c(assayVec, studyList[[i]][1])
+  studyVec <- c(studyVec, studyList[[i]][2])
+}
+
+posteriorTraces$studyAssay <- assayVec[posteriorTraces$stu]
+posteriorTraces$studyCitation <- studyVec[posteriorTraces$stu]
+
+write.csv(posteriorTraces, "../data/analysis_results/sensitivity_decay_all.csv",
           row.names=FALSE)
-
 
 sensitivityTrace <- dplyr::mutate(posteriorTraces, .chain=factor(.chain))  %>%
   ggplot(., aes(x=.iteration, y=.value, color=.chain)) +
@@ -178,6 +208,6 @@ sensitivityTrace <- dplyr::mutate(posteriorTraces, .chain=factor(.chain))  %>%
   theme_bw()
 
 pairsPlot <- pairs(model, pars=c("timeSlope", "intercept", "slopeSigma",
-                                 "interceptSigma"))
+                                 "interceptSigma", "studySigma"))
 #png("../data/figures/simulated_data_fit_pairs_plot.png")
 
