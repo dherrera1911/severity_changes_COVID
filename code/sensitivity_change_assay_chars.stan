@@ -2,8 +2,10 @@ data {
   int<lower=0> N;                           // number of observations
   int<lower=0> K;                           // number of assays
   int<lower=0> M;                           // number of studies:assays
+  int<lower=0> C;                           // number of characteristics
   int<lower=1, upper=K> assay[N];           // assay index vector
   int<lower=1, upper=M> study[N];           // study:assay index vector
+  matrix[N,C] characteristics;              // assay characteristics that we analyze
   vector[N] timeVec;                        // predictor
   int<lower=0> nPositive[N];             // Number of positive samples
   int<lower=0> nTested[N];             // Number of samples tested
@@ -11,7 +13,7 @@ data {
 
 parameters {
   // 
-  real timeSlope;                     // mean slope
+  vector[C] charSlope;                // slope effets of assay characteristics
   real intercept;                     // mean intercept
   real<lower=0> slopeSigma;           // sd of the intercept
   real<lower=0> interceptSigma;       // sd of the intercept
@@ -23,16 +25,17 @@ parameters {
 
 transformed parameters{
   vector<lower=0, upper=1>[N] sensitivity;  // variable to contain % outcome
-  sensitivity = inv_logit(assayIntercept[assay] + studyIntercept[study] + assaySlope[assay] .* timeVec);  // logistic regression model 
+  sensitivity = inv_logit(assayIntercept[assay] + studyIntercept[study] +
+    (assaySlope[assay] + characteristics * charSlope)  .* timeVec);  // logistic regression model 
 }
 
 model {
-  timeSlope ~ normal(0, 100);
+  charSlope ~ normal(0, 100);
   intercept ~ normal(0, 100);
   slopeSigma ~ gamma(4, 8);
   interceptSigma ~ gamma(4, 4);
   studySigma ~ gamma(4, 4);
-  assaySlope ~ normal(timeSlope, slopeSigma);
+  assaySlope ~ normal(0, slopeSigma);
   assayIntercept ~ normal(intercept, interceptSigma);
   studyIntercept ~ normal(0, studySigma);
   nPositive ~ binomial(nTested, sensitivity);

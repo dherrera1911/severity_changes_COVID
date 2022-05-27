@@ -38,20 +38,26 @@ seroUnknown$midpointDate <- lubridate::mdy(seroUnknown$midpointDate)
 newLocs <- c("Ischgl", "Spain", "Adda", "Salt Lake",
              "Ethiopia", "Tamil Nadu", "India", "Tamil Nadu", "Kashmir",
              "Kashmir", "India", "Ireland", "Lithuania", "Tirschenreuth",
-             "United States", "California", "Fulton", "Houston",
-             "Madryn", "Puducherry", "Puducherry", "Puducherry", "Indonesia",
+             "United States", "Houston", "Canada", "Madryn",
+             "Puducherry", "Puducherry", "Puducherry", "Indonesia",
              "Hyderabad", "Delhi", "Delhi", "Ischgl",
              "France", "France", "Kupferzell", "Pune", "Reutlingen",
-             "Freiburg", "Straubing", "Aachen", "Aachen",
+             "Freiburg", "Straubing", "Aachen",
              "Reutlingen", "Osnabruck", "Mitte", "Freiburg", "Magdeburg",
-             "Aachen", "Aachen", "Osnabruck", "Magdeburg", "Chemnitz",
+             "Aachen", "Osnabruck", "Magdeburg", "Chemnitz",
              "Vorpommern", "England",
              "England", "England", "England", "Cantabria", "Gauteng",
              "Wuhan", "Wuhan", "Wuhan", "Tunisia", "Delhi",
-             "Andorra", "Chile", "Holyoke",
-             "Hillsborough", "Spain", "Spain",  "Spain",  "Spain",
+             "Andorra", "Chile", "Los Angeles", "Holyoke",
+             "Hillsborough", "Tyumen", "Khabarovsk",
+             "Saint Petersburg", "Leningrad", "Sverdlovsk",
+             "Tatarstan", "Moscow", "Chelyabinsk", "Irkutsk",
+             "Saratov", "Kaliningrad", "Murmansk", "Krasnoyarsk",
+             "Novosibirsk", "Stavropol",
+             "Spain", "Spain",  "Spain",  "Spain",
              "Portugal", "India", "India", "Lebanon", 
-             "Delhi", "Delhi", "Los Angeles")
+             "Connecticut", "Delhi", "Delhi")
+
 seroUnknown$newLoc <- newLocs
 seroUnknown$pcrReferenceDate <- seroUnknown$midpointDate
 
@@ -61,17 +67,21 @@ seroUnknown$pcrReferenceDate <- seroUnknown$midpointDate
 # 3) Added symptoms date to Castiglioni D'Adda. Not sure if to include,
 #   possible bias due to confirming testing of rapid test positive.
 
-# Remove last 14 days from Chennai, since they exclude those
-chennaiInd1 <- 6
+# Remove last 14 days from Chennai, since they exclude those in their sample
+# both studies?
+chennaiInd1 <- which(seroUnknown$location == "Tamil Nadu: Chennai")[1]
 seroUnknown$pcrReferenceDate[chennaiInd1] <- seroUnknown$pcrReferenceDate[chennaiInd1] - 14
-indiaInd1 <- 7
+# Check india source
+indiaInd1 <- which(seroUnknown$country == "India" & (seroUnknown$location %in%
+                    c("National", "National (unvaccinated population)")))[1]
 seroUnknown$pcrReferenceDate[indiaInd1] <- seroUnknown$pcrReferenceDate[indiaInd1] - 14
 # put a midpoint date to Hillsborough
-hillsboroughInd <- 62
+hillStr <- "Hillsborough County, unvaccinated population"
+hillsboroughInd <- which(seroUnknown$location == hillStr)
 seroUnknown$pcrReferenceDate[hillsboroughInd] <- date("2021-01-01")
 seroUnknown$midpointDate[hillsboroughInd] <- date("2021-01-01")
 # put a midpoint date to Tunisia
-tunisiaInd <- 57
+tunisiaInd <- which(seroUnknown$country == "Tunisia")
 seroUnknown$pcrReferenceDate[tunisiaInd] <- date("2021-04-01")
 seroUnknown$midpointDate[tunisiaInd] <- date("2021-04-01")
 
@@ -85,6 +95,10 @@ for (nr in c(1:nrow(seroUnknown))) {
   medianDay <- locDynamics$date[medianInd]
   estimatedTime[nr] <- (lubridate::interval(medianDay, seroUnknown$midpointDate[nr])/
     months(1))
+}
+
+if (any(estimatedTime==0)) {
+  estimatedTime[estimatedTime==0] <- 1
 }
 
 # Change date for Castiglioni D'Adda

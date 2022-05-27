@@ -70,6 +70,7 @@ covid19_tidying <- function(covid19Df) {
   output <- dplyr::filter(covid19Df, (!is.na(deaths) | !is.na(confirmed))) %>%
     ungroup(.) %>%
     dplyr::select(., date, confirmed, deaths, Location) %>%
+    dplyr::mutate(., date=date(date)) %>%
     dplyr::rename(., cases=confirmed)
   return(output)
 }
@@ -78,11 +79,17 @@ countriesDeaths <- covid19(country=countries) %>%
   dplyr::mutate(., Location=administrative_area_level_1) %>%
   covid19_tidying(.)
 
+countriesDeaths <- read.csv("../data/raw_data/death_dynamics.csv",
+                            stringsAsFactors=FALSE) %>%
+  dplyr::filter(., Location %in% countries) %>%
+  dplyr::mutate(., date=date(date))
+
 franceDeaths <- read.csv("../data/downloaded_datasets/france/owid-covid-data.csv",
                          stringsAsFactors=FALSE) %>%
   dplyr::filter(., location=="France" & (!is.na(total_deaths) | !is.na(total_cases))) %>%
-  dplyr::mutate(., deaths=total_deaths, cases=total_cases, Location="France") %>%
-  dplyr::select(., date, cases, deaths, Location) 
+  dplyr::mutate(., deaths=total_deaths, cases=total_cases, Location="France",
+                date=date(date)) %>%
+  dplyr::select(., date, cases, deaths, Location)
 
 #jersey <- covid19(country="Jersey") %>%
 #  dplyr::mutate(., Location=country) %>%
@@ -111,6 +118,10 @@ usaCountyDeaths <- dplyr::filter(usaDeaths, (administrative_area_level_3 %in%
   covid19_tidying(.)
 usaCountyDeaths$Location[usaCountyDeaths$Location=="Hampden"] <- "Holyoke"
 
+connecticutDeaths <- dplyr::filter(usaDeaths, (administrative_area_level_2=="Connecticut") &
+                                   administrative_area_level_3=="") %>%
+  dplyr::mutate(., Location="Connecticut") %>%
+  covid19_tidying(.)
 
 ### United Kingdom locations
 # Nations
@@ -243,10 +254,6 @@ vorpommernDeaths <- dataGer %>%
   dplyr::filter(., Landkreis=="LK Vorpommern-Greifswald") %>%
   germanCovid_tidy(., "Vorpommern")
 
-
-
-
-
 ### Austria
 dataAut <- read.csv("../data/downloaded_datasets/death_dynamics_covid19_datahub/AUT.csv",
                     stringsAsFactors=FALSE)
@@ -288,11 +295,84 @@ wuhanDeaths <- read.csv("../data/downloaded_datasets/death_dynamics_covid19_data
   covid19_tidying(.)
 
 ### Russia
-petersburgDeaths <- read.csv("../data/downloaded_datasets/death_dynamics_covid19_datahub/RUS.csv",
-                      stringsAsFactors=FALSE) %>%
+russiaDeaths <- read.csv("../data/downloaded_datasets/death_dynamics_covid19_datahub/RUS.csv",
+                         stringsAsFactors=FALSE)
+
+petersburgDeaths <- russiaDeaths %>%
   dplyr::filter(., administrative_area_level_2=="Saint Petersburg") %>%
   dplyr::mutate(., Location="Saint Petersburg") %>%
   covid19_tidying(.)
+
+tyumenDeaths <- russiaDeaths %>%
+  dplyr::filter(., administrative_area_level_2=="Tyumen Oblast") %>%
+  dplyr::mutate(., Location="Tyumen") %>%
+  covid19_tidying(.)
+
+khabarovskDeaths <- russiaDeaths %>%
+  dplyr::filter(., administrative_area_level_2=="Khabarovsk Krai") %>%
+  dplyr::mutate(., Location="Khabarovsk") %>%
+  covid19_tidying(.)
+
+leningradDeaths <- russiaDeaths %>%
+  dplyr::filter(., administrative_area_level_2=="Leningrad Oblast") %>%
+  dplyr::mutate(., Location="Leningrad") %>%
+  covid19_tidying(.)
+
+sverdlovskDeaths <- russiaDeaths %>%
+  dplyr::filter(., administrative_area_level_2=="Sverdlovsk Oblast") %>%
+  dplyr::mutate(., Location="Sverdlovsk") %>%
+  covid19_tidying(.)
+
+tatarstanDeaths <- russiaDeaths %>%
+  dplyr::filter(., administrative_area_level_2=="Tatarstan Republic") %>%
+  dplyr::mutate(., Location="Tatarstan") %>%
+  covid19_tidying(.)
+
+moscowDeaths <- russiaDeaths %>%
+  dplyr::filter(., administrative_area_level_2=="Moscow") %>%
+  dplyr::mutate(., Location="Moscow") %>%
+  covid19_tidying(.)
+
+chelyabinskDeaths <- russiaDeaths %>%
+  dplyr::filter(., administrative_area_level_2=="Chelyabinsk Oblast") %>%
+  dplyr::mutate(., Location="Chelyabinsk") %>%
+  covid19_tidying(.)
+
+irkutskDeaths <- russiaDeaths %>%
+  dplyr::filter(., administrative_area_level_2=="Irkutsk Oblast") %>%
+  dplyr::mutate(., Location="Irkutsk") %>%
+  covid19_tidying(.)
+
+saratovDeaths <- russiaDeaths %>%
+  dplyr::filter(., administrative_area_level_2=="Saratov Oblast") %>%
+  dplyr::mutate(., Location="Saratov") %>%
+  covid19_tidying(.)
+
+kaliningradDeaths <- russiaDeaths %>%
+  dplyr::filter(., administrative_area_level_2=="Kaliningrad Oblast") %>%
+  dplyr::mutate(., Location="Kaliningrad") %>%
+  covid19_tidying(.)
+
+murmanskDeaths <- russiaDeaths %>%
+  dplyr::filter(., administrative_area_level_2=="Murmansk Oblast") %>%
+  dplyr::mutate(., Location="Murmansk") %>%
+  covid19_tidying(.)
+
+krasnoyarskDeaths <- russiaDeaths %>%
+  dplyr::filter(., administrative_area_level_2=="Krasnoyarsk Krai") %>%
+  dplyr::mutate(., Location="Krasnoyarsk") %>%
+  covid19_tidying(.)
+
+novosibirskDeaths <- russiaDeaths %>%
+  dplyr::filter(., administrative_area_level_2=="Novosibirsk Oblast") %>%
+  dplyr::mutate(., Location="Novosibirsk") %>%
+  covid19_tidying(.)
+
+stavropolDeaths <- russiaDeaths %>%
+  dplyr::filter(., administrative_area_level_2=="Stavropol Krai") %>%
+  dplyr::mutate(., Location="Stavropol") %>%
+  covid19_tidying(.)
+
 
 ### South Africa
 southAfricaDeaths <- read.csv("../data/downloaded_datasets/death_dynamics_covid19_datahub/ZAF.csv",
@@ -412,9 +492,11 @@ allDeaths <- rbind(countriesDeaths, franceDeaths, usaStatesDeaths,
   mugicaDeaths, madrynDeaths, chileDeaths, delhiDeaths,
   hyderabadDeaths, kashmirDeaths, odishaDeaths,
   puducherryDeaths, puneDeaths, tamilDeaths, bengalDeaths,
-  indonesiaDeaths, cantabriaDeaths, tunisiaDeaths)
+  indonesiaDeaths, cantabriaDeaths, tunisiaDeaths, connecticutDeaths,
+  petersburgDeaths, tyumenDeaths, khabarovskDeaths, leningradDeaths,
+  sverdlovskDeaths, tatarstanDeaths, moscowDeaths, chelyabinskDeaths,
+  irkutskDeaths, saratovDeaths, kaliningradDeaths, murmanskDeaths,
+  krasnoyarskDeaths, novosibirskDeaths, stavropolDeaths)
 
 write.csv(allDeaths, "../data/raw_data/death_dynamics.csv", row.names=FALSE)
-
-
 
